@@ -5,6 +5,7 @@ This project provides instructions and debian installation media for SolidRun bo
 See below pages for installation instructions:
 
 - [Debian armhf](README.armhf.md)
+- [Debian arm64](README.arm64.md)
 
 ## Creating installation media
 

@@ -1,0 +1,13 @@
+# Debian arm64 netboot boot-script for u-boot distro-boot (v2014.10 or later)
+
+echo loading dtb/${fdtfile}
+load ${devtype} ${devnum}:${distro_bootpart} ${fdt_addr_r} dtb/${fdtfile}
+
+echo loading linux
+load ${devtype} ${devnum}:${distro_bootpart} ${kernel_addr_r} debian-installer/arm64/linux
+
+echo loading initrd.gz
+load ${devtype} ${devnum}:${distro_bootpart} ${ramdisk_addr_r} debian-installer/arm64/initrd.gz
+
+echo Booting the Debian installer...
+booti ${kernel_addr_r} ${ramdisk_addr_r}:0x${filesize} ${fdt_addr_r}
