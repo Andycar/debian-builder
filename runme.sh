@@ -107,6 +107,10 @@ function build_hdmedia_from_netboot() {
 		# TODO: cache locally
 		mkdir -p "${BASEDIR}/tmp/fs/dtb/$(dirname $dtb)"
 		wget -O "${BASEDIR}/tmp/fs/dtb/${dtb}" "${dtbs_url}/${dtb}"
+		if [ $? -ne 0 ]; then
+			echo "DTB Download Failed ..."
+			return 1
+		fi
 	done
 
 	# create boot-script
@@ -144,24 +148,44 @@ function build_hdmedia_from_netboot() {
 #   - HummingBoard Edge
 #   - TODO: HummingBoard CBi
 #   - TODO: SolidSense N6
-download hd-media.tar.gz http://ftp.debian.org/debian/dists/bookworm/main/installer-armhf/20230607+deb12u6/images/hd-media hd-media-12.6.0-armhf.tar.gz
-download debian-12.6.0-armhf-netinst.iso https://cdimage.debian.org/cdimage/release/12.6.0/armhf/iso-cd
-build_hdmedia debian-12.6.0-armhf-netinst.img $((1024*1024*1024)) hd-media-12.6.0-armhf.tar.gz debian-12.6.0-armhf-netinst.iso
+function build_debian_12_armhf() {
+	set -e
+	download hd-media.tar.gz http://ftp.debian.org/debian/dists/bookworm/main/installer-armhf/20230607+deb12u7/images/hd-media hd-media-12.7.0-armhf.tar.gz
+	download debian-12.7.0-armhf-netinst.iso https://cdimage.debian.org/cdimage/release/12.7.0/armhf/iso-cd
+	build_hdmedia debian-12.7.0-armhf-netinst.img $((1024*1024*1024)) hd-media-12.7.0-armhf.tar.gz debian-12.7.0-armhf-netinst.iso
+}
 
 # Debian testing for arm64, net-install, for USB flash-drive (no bootloader)
-# - CN9130 Clearfog Base
-# - CN9130 Clearfog Pro
-# - CN9131 SolidWAN
-# - CN9132 Clearfog
+# - TODO: CN9130 Clearfog Base
+# - TODO: CN9130 Clearfog Pro
+# - TODO: CN9131 SolidWAN
+# - TODO: CN9132 Clearfog
 # - LX2160 Clearfog-CX
 # - LX2160 Honeycomb
 # - LX2162 Clearfog
-download netboot.tar.gz https://d-i.debian.org/daily-images/arm64/daily/netboot netboot-testing-arm64.tar.gz
-build_hdmedia_from_netboot debian-testing-arm64-netinst.img $((96*1024*1024)) netboot-testing-arm64.tar.gz \
-	https://d-i.debian.org/daily-images/arm64/daily/device-tree/ \
-	marvell/cn9130-cf-base.dtb \
-	marvell/cn9130-cf-pro.dtb \
-	marvell/cn9131-cf-solidwan.dtb \
-	freescale/fsl-lx2160a-clearfog-cx.dtb \
-	freescale/fsl-lx2160a-honeycomb.dtb \
-	freescale/fsl-lx2162a-clearfog.dtb
+function build_debian_sid_arm64() {
+	download netboot.tar.gz https://d-i.debian.org/daily-images/arm64/daily/netboot netboot-testing-arm64.tar.gz
+	build_hdmedia_from_netboot debian-testing-arm64-netinst.img $((96*1024*1024)) netboot-testing-arm64.tar.gz \
+		https://d-i.debian.org/daily-images/arm64/daily/device-tree/ \
+		marvell/cn9130-cf-base.dtb \
+		marvell/cn9130-cf-pro.dtb \
+		marvell/cn9131-cf-solidwan.dtb \
+		freescale/fsl-lx2160a-clearfog-cx.dtb \
+		freescale/fsl-lx2160a-honeycomb.dtb \
+		freescale/fsl-lx2162a-clearfog.dtb
+	return $?
+}
+
+if [ $# -lt 1 ]; then
+	# build everything by default
+	s=0
+	build_debian_12_armhf || s=$?
+	build_debian_sid_arm64 || s=$?
+else
+	# build specified only
+	s=0
+	build_${1} || s=$?
+fi
+
+# end with last error coce
+exit $s
