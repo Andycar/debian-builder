@@ -23,12 +23,14 @@ Latest versions can always be prepared using the scripts in [this project](?tab=
 
 ## Install SoC Bootloader
 
-The installation procedure requires a distro-boot capable version of U-Boot already installed on the target device.
-Follow device-specific instructions for u-boot deployment:
+### Armada 38x Clearfog Base / Pro / GTR
 
-- Armada 388:
-  - [SPI Flash](https://github.com/SolidRun/Documentation/blob/bsp/a38x/u-boot.md#installing-automatically-spi-emmc-m2-ssd) (recommended if available)
-  - [eMMC boot0/1](https://github.com/SolidRun/Documentation/blob/bsp/a38x/u-boot.md#emmc-boot0-partition)
+Most boards shipped without a suitable version of U-Boot preinstalled.
+
+Armada 38x has several options for boot sources - for best Debian experience installation is recommended to either SPI Flash or eMMC hardware boot partition:
+
+- [SPI Flash](https://github.com/SolidRun/Documentation/blob/bsp/a38x/u-boot.md#installing-automatically-spi-emmc-m2-ssd) (recommended if available)
+- [eMMC boot0/1](https://github.com/SolidRun/Documentation/blob/bsp/a38x/u-boot.md#emmc-boot0-partition)
 
 ## Boot Installer
 
