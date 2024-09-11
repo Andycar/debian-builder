@@ -24,7 +24,11 @@ Latest versions can always be prepared using the scripts in [this project](?tab=
 
 ## Install SoC Bootloader
 
-TBD.
+### CN9130 SoM / CN9132 COM-Express Type 7
+
+CN913x product line comes preinstalled with U-Boot on SPI.
+
+Update only in case of problems, see [CN913x U-Boot Documentation](https://github.com/SolidRun/Documentation/blob/bsp/cn913x/u-boot.md).
 
 ## Boot Installer
 
