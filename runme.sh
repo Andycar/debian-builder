@@ -53,6 +53,7 @@ function build_hdmedia() {
 	local size=$2
 	local hdmedia="$3"
 	local iso="$4"
+	local rdpatch="$5"
 	local offset=$((4*1024*1024)) # partition at 4M offset
 
 	# create empty workdir
@@ -62,6 +63,11 @@ function build_hdmedia() {
 	# add files
 	tar -C "${BASEDIR}/tmp/fs" -xf "${BASEDIR}/download/${hdmedia}"
 	cp --reflink=auto "${BASEDIR}/download/${iso}" "${BASEDIR}/tmp/fs"
+
+	# patch initrd
+	if [ -n "${rdpatch}" ]; then
+		cat "${rdpatch}" >> "${BASEDIR}/tmp/fs/initrd.gz"
+	fi
 
 	# create ext2 fs, size - 4M
 	truncate -s $((size-offset)) "${BASEDIR}/tmp/installer.ext2"
@@ -135,6 +141,35 @@ function build_hdmedia_from_netboot() {
 	rm -rf "${BASEDIR}/tmp"
 }
 
+# generate initrd withlisted kernel modules, for appenidng to installer initrd
+# can e.g. supply watchdog driver into debian-installer
+function build_initrd_kmod_patch() {
+	set -x
+	local kernel="$1"
+	local patch="$2"
+	shift 2
+
+	# create empty workdir
+	rm -rf "${BASEDIR}/tmp"
+	mkdir -p "${BASEDIR}/tmp"
+	pushd "${BASEDIR}/tmp"
+
+	dpkg -x $kernel .
+
+	rm -f "$patch"
+	mkdir -p lib/debian-installer-startup.d
+	printf "#!/bin/sh\n" > lib/debian-installer-startup.d/S09-sr-modules
+	for mod in $*; do
+		echo $mod | cpio -R 0:0 -H newc -o | gzip >> "$patch"
+		echo "insmod /$mod" >> lib/debian-installer-startup.d/S09-sr-modules
+	done
+	echo lib/debian-installer-startup.d/S09-sr-modules | cpio -R 0:0 -H newc -o | gzip >> "$patch"
+
+	# clean workdir
+	popd
+	rm -rf "${BASEDIR}/tmp"
+}
+
 # Debian 12 for armhf, net-install, for USB flash-drive (no bootloader)
 # - Armada 388:
 #   - Clearfog Base
@@ -150,9 +185,15 @@ function build_hdmedia_from_netboot() {
 #   - TODO: SolidSense N6
 function build_debian_12_armhf() {
 	set -e
+	download linux-image-6.1.0-25-armmp_6.1.106-3_armhf.deb http://ftp.debian.org/debian/pool/main/l/linux linux-image-armmp-12.7.0.deb
 	download hd-media.tar.gz http://ftp.debian.org/debian/dists/bookworm/main/installer-armhf/20230607+deb12u7/images/hd-media hd-media-12.7.0-armhf.tar.gz
 	download debian-12.7.0-armhf-netinst.iso https://cdimage.debian.org/cdimage/release/12.7.0/armhf/iso-cd
-	build_hdmedia debian-12.7.0-armhf-netinst.img $((1024*1024*1024)) hd-media-12.7.0-armhf.tar.gz debian-12.7.0-armhf-netinst.iso
+
+	# generate initrd patch with watchdog driver
+	mkdir -p ${BASEDIR}/generate
+	build_initrd_kmod_patch "${BASEDIR}/download/linux-image-armmp-12.7.0.deb" "${BASEDIR}/generate/linux-image-armmp-12.7.0-kmod.cpio.gz" lib/modules/6.1.0-25-armmp/kernel/drivers/watchdog/imx2_wdt.ko
+
+	build_hdmedia debian-12.7.0-armhf-netinst.img $((1024*1024*1024)) hd-media-12.7.0-armhf.tar.gz debian-12.7.0-armhf-netinst.iso "${BASEDIR}/generate/linux-image-armmp-12.7.0-kmod.cpio.gz"
 }
 
 # Debian testing for arm64, net-install, for USB flash-drive (no bootloader)

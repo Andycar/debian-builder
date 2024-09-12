@@ -9,6 +9,13 @@ This page provides instructions for installing official [Debian from debian.org]
   - Clearfog Pro (since Debian 9)
 - Armada 388 Clearfog GTR S4 (since Debian 10)
 - Armada 388 Clearfog GTR L8 (since Debian 10)
+- i.MX6 SoM:
+  - Cubox-i
+  - HummingBoard Base
+  - HummingBoard Pro
+  - HummingBoard Edge
+  - HummingBoard Gate
+  - SolidSense N6
 
 ## Creating Installer Media
 
@@ -31,6 +38,32 @@ Armada 38x has several options for boot sources - for best Debian experience ins
 
 - [SPI Flash](https://github.com/SolidRun/Documentation/blob/bsp/a38x/u-boot.md#installing-automatically-spi-emmc-m2-ssd) (recommended if available)
 - [eMMC boot0/1](https://github.com/SolidRun/Documentation/blob/bsp/a38x/u-boot.md#emmc-boot0-partition)
+
+### i.MX6 HummingBoard / SolidSense N6
+
+Recommendations for Bootloader vary between products:
+
+- Cubox-i / HummingBoard Base / Pro:
+
+  By default the SoC starts from microSD, unless efuses have been programmed.
+  Changing efuses is not recommended due to risk of bricking the device.
+
+  Therefore proceed below with installing u-boot to microSD.
+
+- HummingBoard Edge / Gate / CBi / SolidSense N6 - revision 1.2 or earlier:
+
+  Same as Cubox-i.
+
+- HummingBoard Edge / Gate / CBi / SolidSense N6 - revision 1.3 or later:
+
+  These boards can configure the boot media using [boot jumpers](https://solidrun.atlassian.net/wiki/spaces/developer/pages/286621835/HummingBoard+Edge+Gate+Boot+Jumpers), options are microSD, eMMC and SATA.
+
+  If eMMC is available on the SoM, U-Boot should be installed to the hardware boot partition.
+
+  Otherwise: First install U-Boot to the most convenient media;
+  Then after Debian installation has completed (re-) install to the same media where the Operating System resides.
+
+For instructions see [SolidRun i.MX6 U-Boot Documentation](https://solidrun.atlassian.net/wiki/spaces/developer/pages/287179374/i.MX6+U-Boot).
 
 ## Boot Installer
 
@@ -66,5 +99,17 @@ boot_targets=mmc0 usb0 scsi0 pxe dhcp
 New units without an operating system on integrated storage will automatically boot into the debian installer media.
 Boot of a specific media can be forced by combining a boot-target with `bootcmd_*`, e.g.:
 
+    # select fdtfile (for i.MX6 only)
+    run findfdt
+
     # boot from USB drive
     run bootcmd_usb0
+
+## Known Issues / Workarounds
+
+### i.MX6 HummingBoard / SolidSense N6
+
+#### EHCI timed out on TD
+
+Some USB-3.0 flash drives produce timeouts when u-boot tries loading the installer.
+Please revert to an old USB-2.0 only flash drive instead.
