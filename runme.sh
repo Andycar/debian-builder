@@ -50,10 +50,11 @@ function download() (
 #
 function build_hdmedia() {
 	local name="$1"
-	local size=$2
-	local hdmedia="$3"
-	local iso="$4"
-	local rdpatch="$5"
+	local fsname="$2"
+	local size=$3
+	local hdmedia="$4"
+	local iso="$5"
+	local rdpatch="$6"
 	local offset=$((4*1024*1024)) # partition at 4M offset
 
 	# create empty workdir
@@ -71,7 +72,7 @@ function build_hdmedia() {
 
 	# create ext2 fs, size - 4M
 	truncate -s $((size-offset)) "${BASEDIR}/tmp/installer.ext2"
-	mke2fs -t ext2 -E root_owner=0:0 -E no_copy_xattrs -L "d-i-12.6.0-armhf" -d "${BASEDIR}/tmp/fs" "${BASEDIR}/tmp/installer.ext2"
+	mke2fs -t ext2 -E root_owner=0:0 -E no_copy_xattrs -L "${fsname}" -d "${BASEDIR}/tmp/fs" "${BASEDIR}/tmp/installer.ext2"
 
 	# create disk image, ext2 at offset 4M
 	truncate -s ${offset} "${BASEDIR}/tmp/installer.img"
@@ -94,11 +95,10 @@ function build_hdmedia() {
 #
 function build_hdmedia_from_netboot() {
 	local name="$1"
-	local size=$2
-	local netboot="$3"
-	local dtbs_url=$4
-	shift 4
-	local dtbs="$*"
+	local fsname="$2"
+	local size=$3
+	local netboot="$4"
+	local dtbs_pkg=$5
 	local offset=$((4*1024*1024)) # partition at 4M offset
 
 	# create empty workdir
@@ -109,22 +109,15 @@ function build_hdmedia_from_netboot() {
 	tar -C "${BASEDIR}/tmp/fs" -xf "${BASEDIR}/download/${netboot}"
 
 	# add DTBs
-	for dtb in ${dtbs}; do
-		# TODO: cache locally
-		mkdir -p "${BASEDIR}/tmp/fs/dtb/$(dirname $dtb)"
-		wget -O "${BASEDIR}/tmp/fs/dtb/${dtb}" "${dtbs_url}/${dtb}"
-		if [ $? -ne 0 ]; then
-			echo "DTB Download Failed ..."
-			return 1
-		fi
-	done
+	mkdir -p "${BASEDIR}/tmp/fs/dtb"
+	tar -C "${BASEDIR}/tmp/fs/dtb" -xf "${dtbs_pkg}"
 
 	# create boot-script
 	mkimage -A arm -T script -C none -a 0 -e 0 -d "${BASEDIR}/src/arm64-hdmedia-boot.txt" "${BASEDIR}/tmp/fs/boot.scr"
 
 	# create ext2 fs, size - 4M
 	truncate -s $((size-offset)) "${BASEDIR}/tmp/installer.ext2"
-	mke2fs -t ext2 -E root_owner=0:0 -E no_copy_xattrs -L "d-i-12.6.0-armhf" -d "${BASEDIR}/tmp/fs" "${BASEDIR}/tmp/installer.ext2"
+	mke2fs -t ext2 -E root_owner=0:0 -E no_copy_xattrs -L "${fsname}" -d "${BASEDIR}/tmp/fs" "${BASEDIR}/tmp/installer.ext2"
 
 	# create disk image, ext2 at offset 4M
 	truncate -s ${offset} "${BASEDIR}/tmp/installer.img"
@@ -141,10 +134,28 @@ function build_hdmedia_from_netboot() {
 	rm -rf "${BASEDIR}/tmp"
 }
 
+# generate device-tree tarball from kernel deb
+function build_dtb_pkg() {
+	local deb="$1"
+	local pkg="$2"
+
+	# create empty workdir
+	rm -rf "${BASEDIR}/tmp"
+	mkdir -p "${BASEDIR}/tmp"
+	pushd "${BASEDIR}/tmp"
+
+	dpkg -x "${deb}" .
+	cd usr/lib/linux-image-*
+	tar -cf "${pkg}" *
+
+	# clean workdir
+	popd
+	rm -rf "${BASEDIR}/tmp"
+}
+
 # generate initrd withlisted kernel modules, for appenidng to installer initrd
 # can e.g. supply watchdog driver into debian-installer
 function build_initrd_kmod_patch() {
-	set -x
 	local kernel="$1"
 	local patch="$2"
 	shift 2
@@ -193,27 +204,28 @@ function build_debian_12_armhf() {
 	mkdir -p ${BASEDIR}/generate
 	build_initrd_kmod_patch "${BASEDIR}/download/linux-image-armmp-12.7.0.deb" "${BASEDIR}/generate/linux-image-armmp-12.7.0-kmod.cpio.gz" lib/modules/6.1.0-25-armmp/kernel/drivers/watchdog/imx2_wdt.ko
 
-	build_hdmedia debian-12.7.0-armhf-netinst.img $((1024*1024*1024)) hd-media-12.7.0-armhf.tar.gz debian-12.7.0-armhf-netinst.iso "${BASEDIR}/generate/linux-image-armmp-12.7.0-kmod.cpio.gz"
+	build_hdmedia debian-12.7.0-armhf-netinst.img d-i-12.7.0-armhf $((1024*1024*1024)) hd-media-12.7.0-armhf.tar.gz debian-12.7.0-armhf-netinst.iso "${BASEDIR}/generate/linux-image-armmp-12.7.0-kmod.cpio.gz"
 }
 
 # Debian testing for arm64, net-install, for USB flash-drive (no bootloader)
-# - TODO: CN9130 Clearfog Base
-# - TODO: CN9130 Clearfog Pro
-# - TODO: CN9131 SolidWAN
-# - TODO: CN9132 Clearfog
+# - AM64 HummingBoard-T
+# - CN9130 Clearfog Base
+# - CN9130 Clearfog Pro
+# - CN9131 SolidWAN
+# - CN9132 Clearfog
 # - LX2160 Clearfog-CX
 # - LX2160 Honeycomb
 # - LX2162 Clearfog
-function build_debian_sid_arm64() {
+function build_debian_testing_arm64() {
+	download linux-image-6.10.9-arm64_6.10.9-1_arm64.deb http://ftp.de.debian.org/debian/pool/main/l/linux-signed-arm64 linux-image-arm64-testing.deb
+	build_dtb_pkg "${BASEDIR}/download/linux-image-arm64-testing.deb" "${BASEDIR}/generate/dtbs-arm64-testing.tar"
 	download netboot.tar.gz https://d-i.debian.org/daily-images/arm64/daily/netboot netboot-testing-arm64.tar.gz
-	build_hdmedia_from_netboot debian-testing-arm64-netinst.img $((96*1024*1024)) netboot-testing-arm64.tar.gz \
-		https://d-i.debian.org/daily-images/arm64/daily/device-tree/ \
-		marvell/cn9130-cf-base.dtb \
-		marvell/cn9130-cf-pro.dtb \
-		marvell/cn9131-cf-solidwan.dtb \
-		freescale/fsl-lx2160a-clearfog-cx.dtb \
-		freescale/fsl-lx2160a-honeycomb.dtb \
-		freescale/fsl-lx2162a-clearfog.dtb
+	build_hdmedia_from_netboot \
+		debian-testing-arm64-netinst.img \
+		d-i-sid-arm64 \
+		$((256*1024*1024)) \
+		netboot-testing-arm64.tar.gz \
+		"${BASEDIR}/generate/dtbs-arm64-testing.tar"
 	return $?
 }
 
@@ -221,7 +233,7 @@ if [ $# -lt 1 ]; then
 	# build everything by default
 	s=0
 	build_debian_12_armhf || s=$?
-	build_debian_sid_arm64 || s=$?
+	build_debian_testing_arm64 || s=$?
 else
 	# build specified only
 	s=0

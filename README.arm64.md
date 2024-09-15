@@ -4,6 +4,8 @@ This page provides instructions for installing official [Debian from debian.org]
 
 ## Supported Devices
 
+- AM64 SoM:
+  - HummingBoard-T (since Debian 13)
 - CN9130 SoM:
   - Clearfog Base (since Debian 13)
   - Clearfog Pro (since Debian 13)
@@ -15,7 +17,7 @@ This page provides instructions for installing official [Debian from debian.org]
 
 SolidRun provides prebuilt installer disk images:
 
-- [Debian Bookworm (12)](https://images.solid-run.com/Pure-Debian/arm64/12/)
+- ~[Debian Bookworm (13)](https://images.solid-run.com/Pure-Debian/arm64/13/)~
 
 Download an image above, decompress and write it to a suitable installation media such as USB flash drive or SD-Card, e.g. using `dd` or [etcher.io](https://etcher.io/)
 The installer media **can not be used as installation destination**: E.g. when installing Debian to SD-Card, Installer must be on USB Drive.
@@ -23,6 +25,13 @@ The installer media **can not be used as installation destination**: E.g. when i
 Latest versions can always be prepared using the scripts in [this project](?tab=readme-ov-file#creating-installation-media).
 
 ## Install SoC Bootloader
+
+### AM64 SoM
+
+- Set Boot-Switches for microSD according to our [Reference BSP Documentation](https://github.com/SolidRun/ti_am64x_build?tab=readme-ov-file#configure-boot-mode-dip-switch)
+- Boot from microSD with an [image](https://images.solid-run.com/AM64X/ti_am64x_build) from our [Reference BSP](https://github.com/SolidRun/ti_am64x_build)
+- Install U-Boot to the eMMC boot0 partition according to our [Reference BSP Documentation](https://github.com/SolidRun/ti_am64x_build?tab=readme-ov-file#booting-from-emmc)
+- Set Boot-Switches to eMMC according to our [Reference BSP Documentation](https://github.com/SolidRun/ti_am64x_build?tab=readme-ov-file#configure-boot-mode-dip-switch)
 
 ### CN9130 SoM / CN9132 COM-Express Type 7
 
@@ -63,6 +72,9 @@ boot_targets=mmc0 usb0 scsi0 pxe dhcp
 
 New units without an operating system on integrated storage will automatically boot into the debian installer media.
 Boot of a specific media can be forced by combining a boot-target with `bootcmd_*`, e.g.:
+
+    # select fdtfile (for AM64 only)
+    run findfdt
 
     # boot from USB drive
     run bootcmd_usb0
