@@ -1,6 +1,6 @@
 # Debian on SolidRun Boards - 64-bit ARM
 
-This page provides instructions for installing official [Debian from debian.org](https://www.debian.org/) on SolidRun 32-bit arm platforms.
+This page provides instructions for installing official [Debian from debian.org](https://www.debian.org/) on SolidRun 64-bit arm platforms.
 
 ## Supported Devices
 
