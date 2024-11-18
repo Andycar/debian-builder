@@ -12,6 +12,11 @@ This page provides instructions for installing official [Debian from debian.org]
   - CN9131 SolidWAN (since Debian 13)
 - CN9132 COM-Express Type 7
   - Clearfog (since Debian 13)
+- LX2160A COM-Express Type 7
+  - Clearfog-CX
+  - Honeycomb
+- LX2162A SoM
+  - Clearfog
 
 ## Creating Installer Media
 
@@ -38,6 +43,38 @@ Latest versions can always be prepared using the scripts in [this project](?tab=
 CN913x product line comes preinstalled with U-Boot on SPI.
 
 Update only in case of problems, see [CN913x U-Boot Documentation](https://github.com/SolidRun/Documentation/blob/bsp/cn913x/u-boot.md).
+
+### LX2160A COM-Express Type 7 / LX2162A SoM
+
+- Set Boot-Switches for microSD according to our [Quick-Start Guide](https://solidrun.atlassian.net/wiki/spaces/developer/pages/197494288/HoneyComb+LX2+ClearFog+CX+LX2+Quick+Start+Guide#Boot-Select)
+
+- Boot from microSD with an [image of ls-5.15.71-2.2.0 release](https://images.solid-run.com/LX2k/lx2160a_build/ls-5.15.71-2.2.0). Pick according to your hardware:
+
+  - LX2162A Clearfog: `lx2162a_rev2_som_clearfog_2000_650_2900_18_9_0-xxxxxxx.img.xz`
+
+  - LX2160A Honeycomb:
+
+    - DDR4-2400: `lx2160a_rev2_cex7_honeycomb_2000_700_2400_18_5_2-xxxxxxx.img.xz`
+    - DDR4-2600: `lx2160a_rev2_cex7_honeycomb_2000_700_2600_18_5_2-xxxxxxx.img.xz`
+    - DDR4-2900: `lx2160a_rev2_cex7_honeycomb_2000_700_2900_18_5_2-xxxxxxx.img.xz`
+
+  - LX2160A Clearfog-CX (board rev. 1.2+ with QSFP connector only):
+
+    - DDR4-2400: `lx2160a_rev2_cex7_clearfog-cx_xspi_2000_700_2400_18_5_2-xxxxxxx.img.xz`
+    - DDR4-2600: `lx2160a_rev2_cex7_clearfog-cx_xspi_2000_700_2600_18_5_2-xxxxxxx.img.xz`
+    - DDR4-2900: `lx2160a_rev2_cex7_clearfog-cx_xspi_2000_700_2900_18_5_2-xxxxxxx.img.xz`
+
+- Install U-Boot to SPI Flash according to our [Reference BSP Documentation](https://github.com/SolidRun/lx2160a_build/tree/develop-ls-5.15.71-2.2.0?tab=readme-ov-file#spi-boot)
+
+- Set Boot-Switches for SPI Flash according to our [Quick-Start Guide](https://solidrun.atlassian.net/wiki/spaces/developer/pages/197494288/HoneyComb+LX2+ClearFog+CX+LX2+Quick+Start+Guide#Boot-Select)
+
+- Boot to U-Boot from SPI and configure for Debian:
+
+  ```
+  setenv boot_scripts boot.scr
+  setenv bootargs arm-smmu.disable_bypass=0
+  saveenv
+  ```
 
 ## Boot Installer
 
@@ -169,4 +206,21 @@ unable to select a mode
 switch to partitions #0, OK
 mmc0(part 0) is current device
 Marvell>>
+```
+
+### LX2160A COM-Express Type 7 / LX2162A SoM
+
+#### Fan runs at Full Speed
+
+BSP LS-5.15.71-2.2.0 does no longer implement releasing the fan-controller override signal.
+At the same time support has not yet been added to Linux (mainline) either.
+
+As a work-around the override may be released manually:
+
+```
+sudo apt-get intall gpiod
+sudo gpiodetect | grep 2320000.gpio
+# gpiochip2 [2320000.gpio] (32 lines) <-- take gpio chip number for next command from here
+sudo gpioset -z -c gpiochip2 2=1
+
 ```
