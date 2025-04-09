@@ -196,15 +196,15 @@ function build_initrd_kmod_patch() {
 #   - TODO: SolidSense N6
 function build_debian_12_armhf() {
 	set -e
-	download linux-image-6.1.0-29-armmp_6.1.123-1_armhf.deb http://ftp.debian.org/debian/pool/main/l/linux linux-image-armmp-12.9.0.deb
-	download hd-media.tar.gz http://ftp.debian.org/debian/dists/bookworm/main/installer-armhf/20230607+deb12u9/images/hd-media hd-media-12.9.0-armhf.tar.gz
-	download debian-12.9.0-armhf-netinst.iso https://cdimage.debian.org/cdimage/release/12.9.0/armhf/iso-cd
+	download linux-image-6.1.0-32-armmp_6.1.129-1_armhf.deb http://ftp.debian.org/debian/pool/main/l/linux linux-image-armmp-12.10.0.deb
+	download hd-media.tar.gz http://ftp.debian.org/debian/dists/bookworm/main/installer-armhf/20230607+deb12u10/images/hd-media hd-media-12.10.0-armhf.tar.gz
+	download debian-12.10.0-armhf-netinst.iso https://cdimage.debian.org/cdimage/release/12.10.0/armhf/iso-cd
 
 	# generate initrd patch with watchdog driver
 	mkdir -p ${BASEDIR}/generate
-	build_initrd_kmod_patch "${BASEDIR}/download/linux-image-armmp-12.9.0.deb" "${BASEDIR}/generate/linux-image-armmp-12.9.0-kmod.cpio.gz" lib/modules/6.1.0-29-armmp/kernel/drivers/watchdog/imx2_wdt.ko
+	build_initrd_kmod_patch "${BASEDIR}/download/linux-image-armmp-12.10.0.deb" "${BASEDIR}/generate/linux-image-armmp-12.10.0-kmod.cpio.gz" lib/modules/6.1.0-32-armmp/kernel/drivers/watchdog/imx2_wdt.ko
 
-	build_hdmedia debian-12.9.0-armhf-netinst.img d-i-12.9.0-armhf $((1024*1024*1024)) hd-media-12.9.0-armhf.tar.gz debian-12.9.0-armhf-netinst.iso "${BASEDIR}/generate/linux-image-armmp-12.9.0-kmod.cpio.gz"
+	build_hdmedia debian-12.10.0-armhf-netinst.img d-i-12.10.0-armhf $((1024*1024*1024)) hd-media-12.10.0-armhf.tar.gz debian-12.10.0-armhf-netinst.iso "${BASEDIR}/generate/linux-image-armmp-12.10.0-kmod.cpio.gz"
 }
 
 # Debian testing for arm64, net-install, for USB flash-drive (no bootloader)
