@@ -217,7 +217,7 @@ function build_debian_12_armhf() {
 # - LX2160 Honeycomb
 # - LX2162 Clearfog
 function build_debian_testing_arm64() {
-	download linux-image-6.12.10-arm64_6.12.10-1_arm64.deb http://ftp.de.debian.org/debian/pool/main/l/linux-signed-arm64 linux-image-arm64-testing.deb
+	download linux-image-6.12.21-arm64_6.12.21-1_arm64.deb http://ftp.de.debian.org/debian/pool/main/l/linux-signed-arm64 linux-image-arm64-testing.deb
 	build_dtb_pkg "${BASEDIR}/download/linux-image-arm64-testing.deb" "${BASEDIR}/generate/dtbs-arm64-testing.tar"
 	download netboot.tar.gz https://d-i.debian.org/daily-images/arm64/daily/netboot netboot-testing-arm64.tar.gz
 	build_hdmedia_from_netboot \
