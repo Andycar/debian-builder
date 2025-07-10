@@ -22,7 +22,7 @@ This page provides instructions for installing official [Debian from debian.org]
 
 SolidRun provides prebuilt installer disk images:
 
-- ~[Debian Bookworm (13)](https://images.solid-run.com/Pure-Debian/arm64/13/)~
+- [Debian Bookworm (13)](https://images.solid-run.com/Pure-Debian/arm64/13/)
 
 Download an image above, decompress and write it to a suitable installation media such as USB flash drive or SD-Card, e.g. using `dd` or [etcher.io](https://etcher.io/)
 The installer media **can not be used as installation destination**: E.g. when installing Debian to SD-Card, Installer must be on USB Drive.

@@ -207,7 +207,7 @@ function build_debian_12_armhf() {
 	build_hdmedia debian-12.11.0-armhf-netinst.img d-i-12.11.0-armhf $((1024*1024*1024)) hd-media-12.11.0-armhf.tar.gz debian-12.11.0-armhf-netinst.iso "${BASEDIR}/generate/linux-image-armmp-12.11.0-kmod.cpio.gz"
 }
 
-# Debian testing for arm64, net-install, for USB flash-drive (no bootloader)
+# Debian trixie for arm64, net-install, for USB flash-drive (no bootloader)
 # - AM64 HummingBoard-T
 # - CN9130 Clearfog Base
 # - CN9130 Clearfog Pro
@@ -216,16 +216,17 @@ function build_debian_12_armhf() {
 # - LX2160 Clearfog-CX
 # - LX2160 Honeycomb
 # - LX2162 Clearfog
-function build_debian_testing_arm64() {
-	download linux-image-6.12.21-arm64_6.12.21-1_arm64.deb http://ftp.de.debian.org/debian/pool/main/l/linux-signed-arm64 linux-image-arm64-testing.deb
-	build_dtb_pkg "${BASEDIR}/download/linux-image-arm64-testing.deb" "${BASEDIR}/generate/dtbs-arm64-testing.tar"
-	download netboot.tar.gz https://d-i.debian.org/daily-images/arm64/daily/netboot netboot-testing-arm64.tar.gz
+function build_debian_13_arm64() {
+	download linux-image-6.12.33+deb13-arm64_6.12.33-1_arm64.deb http://ftp.de.debian.org/debian/pool/main/l/linux-signed-arm64 linux-image-arm64-trixie-rc2.deb
+	mkdir -p ${BASEDIR}/generate
+	build_dtb_pkg "${BASEDIR}/download/linux-image-arm64-trixie-rc2.deb" "${BASEDIR}/generate/dtbs-arm64-trixie-rc2.tar"
+	download netboot.tar.gz https://deb.debian.org/debian/dists/testing/main/installer-arm64/current/images/netboot netboot-trixie-arm64.tar.gz
 	build_hdmedia_from_netboot \
-		debian-testing-arm64-netinst.img \
-		d-i-sid-arm64 \
+		debian-13.0.0-rc2-arm64-netinst.img \
+		d-i-trixie-arm64 \
 		$((256*1024*1024)) \
-		netboot-testing-arm64.tar.gz \
-		"${BASEDIR}/generate/dtbs-arm64-testing.tar"
+		netboot-trixie-arm64.tar.gz \
+		"${BASEDIR}/generate/dtbs-arm64-trixie-rc2.tar"
 	return $?
 }
 
@@ -233,7 +234,7 @@ if [ $# -lt 1 ]; then
 	# build everything by default
 	s=0
 	build_debian_12_armhf || s=$?
-	build_debian_testing_arm64 || s=$?
+	build_debian_13_arm64 || s=$?
 else
 	# build specified only
 	s=0
