@@ -198,7 +198,7 @@ function build_debian_12_armhf() {
 	set -e
 	download linux-image-6.1.0-35-armmp_6.1.137-1_armhf.deb http://ftp.debian.org/debian/pool/main/l/linux linux-image-armmp-12.11.0.deb
 	download hd-media.tar.gz http://ftp.debian.org/debian/dists/bookworm/main/installer-armhf/20230607+deb12u11/images/hd-media hd-media-12.11.0-armhf.tar.gz
-	download debian-12.11.0-armhf-netinst.iso https://cdimage.debian.org/cdimage/release/12.11.0/armhf/iso-cd
+	download debian-12.11.0-armhf-netinst.iso https://cdimage.debian.org/cdimage/archive/12.11.0/armhf/iso-cd
 
 	# generate initrd patch with watchdog driver
 	mkdir -p ${BASEDIR}/generate
