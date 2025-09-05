@@ -171,10 +171,11 @@ function build_initrd_kmod_patch() {
 	mkdir -p lib/debian-installer-startup.d
 	printf "#!/bin/sh\n" > lib/debian-installer-startup.d/S09-sr-modules
 	for mod in $*; do
-		echo $mod | cpio -R 0:0 -H newc -o | gzip >> "$patch"
+		echo $mod >> index
 		echo "insmod /$mod" >> lib/debian-installer-startup.d/S09-sr-modules
 	done
-	echo lib/debian-installer-startup.d/S09-sr-modules | cpio -R 0:0 -H newc -o | gzip >> "$patch"
+	echo lib/debian-installer-startup.d/S09-sr-modules >> index
+	cat index | cpio -R 0:0 -H newc -o | gzip > "$patch"
 
 	# clean workdir
 	popd
