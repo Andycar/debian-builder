@@ -64,7 +64,7 @@ Update only in case of problems, see [CN913x U-Boot Documentation](https://githu
     - DDR4-2600: `lx2160a_rev2_cex7_clearfog-cx_xspi_2000_700_2600_18_5_2-xxxxxxx.img.xz`
     - DDR4-2900: `lx2160a_rev2_cex7_clearfog-cx_xspi_2000_700_2900_18_5_2-xxxxxxx.img.xz`
 
-- Install U-Boot to SPI Flash according to our [Reference BSP Documentation](https://github.com/SolidRun/lx2160a_build/tree/develop-ls-5.15.71-2.2.0?tab=readme-ov-file#spi-boot)
+- Install U-Boot to SPI Flash according to our [Reference BSP Documentation](https://github.com/SolidRun/lx2160a_build/tree/develop-ls-6.6.52-2.2.0?tab=readme-ov-file#spi-boot)
 
 - Set Boot-Switches for SPI Flash according to our [Quick-Start Guide](https://solidrun.atlassian.net/wiki/spaces/developer/pages/197494288/HoneyComb+LX2+ClearFog+CX+LX2+Quick+Start+Guide#Boot-Select)
 
@@ -210,17 +210,13 @@ Marvell>>
 
 ### LX2160A COM-Express Type 7 / LX2162A SoM
 
-#### Fan runs at Full Speed
+#### SD-Card not accessible from Linux
 
-BSP LS-5.15.71-2.2.0 does no longer implement releasing the fan-controller override signal.
-At the same time support has not yet been added to Linux (mainline) either.
+Upstream corrupts pinmux at runtime as part of i2c bus recovery (see [here](https://lore.kernel.org/r/f32c5525-3162-4acd-880c-99fc46d3a63d@solid-run.com) for details).
 
-As a work-around the override may be released manually:
+LS-6.6.52-2.2.0 based SolidRun BSP includes a workaround, ensure to use binaries from [ls-6.6.52-2.2.0 branch](https://images.solid-run.com/LX2k/lx2160a_build/ls-6.6.52-2.2.0/).
 
-```
-sudo apt-get intall gpiod
-sudo gpiodetect | grep 2320000.gpio
-# gpiochip2 [2320000.gpio] (32 lines) <-- take gpio chip number for next command from here
-sudo gpioset -z -c gpiochip2 2=1
+#### LX2162A Clearfog RJ45 ports not functional
 
-```
+The ethernet phy driving the 8x RJ45 ports is not yet supported in upstream Linux.
+Use SFP ports or USB ethernet adapter for connectivty.

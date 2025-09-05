@@ -182,6 +182,36 @@ function build_initrd_kmod_patch() {
 	rm -rf "${BASEDIR}/tmp"
 }
 
+# generate initrd withlisted kernel modules, for appenidng to installer initrd
+# can e.g. supply watchdog driver into debian-installer
+# variant for debian 13 or later, with /usr/ directory in initrd
+function build_initrd_kmod_patch_usr() {
+	local kernel="$1"
+	local patch="$2"
+	shift 2
+
+	# create empty workdir
+	rm -rf "${BASEDIR}/tmp"
+	mkdir -p "${BASEDIR}/tmp"
+	pushd "${BASEDIR}/tmp"
+
+	dpkg -x $kernel .
+
+	rm -f "$patch"
+	mkdir -p usr/lib/debian-installer-startup.d
+	printf "#!/bin/sh\n" > usr/lib/debian-installer-startup.d/S09-sr-modules
+	for mod in $*; do
+		echo $mod >> index
+		echo "insmod /$mod" >> usr/lib/debian-installer-startup.d/S09-sr-modules
+	done
+	echo usr/lib/debian-installer-startup.d/S09-sr-modules >> index
+	cat index | cpio -R 0:0 -H newc -o | gzip > "$patch"
+
+	# clean workdir
+	popd
+	rm -rf "${BASEDIR}/tmp"
+}
+
 # Debian 12 for armhf, net-install, for USB flash-drive (no bootloader)
 # - Armada 388:
 #   - Clearfog Base
@@ -218,17 +248,28 @@ function build_debian_12_armhf() {
 # - LX2160 Honeycomb
 # - LX2162 Clearfog
 function build_debian_13_arm64() {
-	download linux-image-6.12.33+deb13-arm64_6.12.33-1_arm64.deb http://ftp.de.debian.org/debian/pool/main/l/linux-signed-arm64 linux-image-arm64-trixie-rc2.deb
+download linux-image-6.12.38+deb13-arm64_6.12.38-1_arm64.deb http://ftp.debian.org/debian/pool/main/l/linux-signed-arm64 linux-image-arm64-13.0.0.deb
+	local s=0
+
+	download hd-media.tar.gz https://deb.debian.org/debian/dists/trixie/main/installer-arm64/20250803/images/hd-media hd-media-13.0.0-armhf.tar.gz || s=$?
+	download debian-13.0.0-arm64-netinst.iso https://cdimage.debian.org/cdimage/release/13.0.0/arm64/iso-cd || s=$?
+
+	# generate initrd patch with extra drivers:
+	# - xgmac_mdio (for emdio and pcs-phy buses)
+	# - at803x (for for on-som/com 1G ethernet phy)
+	# - phy_fsl_lynx_28g (for serdes phy)
+	# - i2c_mux, i2c_mux_pca954x (for sfp i2c bus)
 	mkdir -p ${BASEDIR}/generate
-	build_dtb_pkg "${BASEDIR}/download/linux-image-arm64-trixie-rc2.deb" "${BASEDIR}/generate/dtbs-arm64-trixie-rc2.tar"
-	download netboot.tar.gz https://deb.debian.org/debian/dists/testing/main/installer-arm64/current/images/netboot netboot-trixie-arm64.tar.gz
-	build_hdmedia_from_netboot \
-		debian-13.0.0-rc2-arm64-netinst.img \
-		d-i-trixie-arm64 \
-		$((256*1024*1024)) \
-		netboot-trixie-arm64.tar.gz \
-		"${BASEDIR}/generate/dtbs-arm64-trixie-rc2.tar"
-	return $?
+	build_initrd_kmod_patch_usr "${BASEDIR}/download/linux-image-arm64-13.0.0.deb" "${BASEDIR}/generate/linux-image-arm64-13.0.0-kmod.cpio.gz" \
+		usr/lib/modules/6.12.38+deb13-arm64/kernel/drivers/net/ethernet/freescale/xgmac_mdio.ko.xz \
+		usr/lib/modules/6.12.38+deb13-arm64/kernel/drivers/net/phy/qcom/at803x.ko.xz \
+		usr/lib/modules/6.12.38+deb13-arm64/kernel/drivers/phy/freescale/phy-fsl-lynx-28g.ko.xz \
+		usr/lib/modules/6.12.38+deb13-arm64/kernel/drivers/i2c/i2c-mux.ko.xz \
+		usr/lib/modules/6.12.38+deb13-arm64/kernel/drivers/i2c/muxes/i2c-mux-pca954x.ko.xz || s=$?
+
+	build_hdmedia debian-13.0.0-arm64-netinst.img d-i-13.0.0-arm64 $((1024*1024*1024)) hd-media-13.0.0-armhf.tar.gz debian-13.0.0-arm64-netinst.iso "${BASEDIR}/generate/linux-image-arm64-13.0.0-kmod.cpio.gz" || s=$?
+
+	return $s
 }
 
 if [ $# -lt 1 ]; then
