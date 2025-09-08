@@ -4,14 +4,14 @@ This page provides instructions for installing official [Debian from debian.org]
 
 ## Supported Devices
 
-- AM64 SoM:
-  - HummingBoard-T (since Debian 13)
-- CN9130 SoM:
-  - Clearfog Base (since Debian 13)
-  - Clearfog Pro (since Debian 13)
-  - CN9131 SolidWAN (since Debian 13)
-- CN9132 COM-Express Type 7
-  - Clearfog (since Debian 13)
+~~- AM64 SoM:~~
+  ~~- HummingBoard-T (since Debian 13)~~
+~~- CN9130 SoM:~~
+  ~~- Clearfog Base (since Debian 13)~~
+  ~~- Clearfog Pro (since Debian 13)~~
+  ~~- CN9131 SolidWAN (since Debian 13)~~
+~~- CN9132 COM-Express Type 7~~
+  ~~- Clearfog (since Debian 13)~~
 - LX2160A COM-Express Type 7
   - Clearfog-CX
   - Honeycomb
@@ -48,21 +48,21 @@ Update only in case of problems, see [CN913x U-Boot Documentation](https://githu
 
 - Set Boot-Switches for microSD according to our [Quick-Start Guide](https://solidrun.atlassian.net/wiki/spaces/developer/pages/197494288/HoneyComb+LX2+ClearFog+CX+LX2+Quick+Start+Guide#Boot-Select)
 
-- Boot from microSD with an [image of ls-5.15.71-2.2.0 release](https://images.solid-run.com/LX2k/lx2160a_build/ls-5.15.71-2.2.0). Pick according to your hardware:
+- Boot from microSD with an [image of ls-6.6..52-2.2.0 release](https://images.solid-run.com/LX2k/lx2160a_build/ls-6.6.52-2.2.0). Pick according to your hardware:
 
-  - LX2162A Clearfog: `lx2162a_rev2_som_clearfog_2000_650_2900_18_9_0-xxxxxxx.img.xz`
+  - LX2162A Clearfog: `lx2162a_rev2_som_clearfog_multi_2000_650_2900_18_9_0-xxxxxxx.img.xz`
 
   - LX2160A Honeycomb:
 
-    - DDR4-2400: `lx2160a_rev2_cex7_honeycomb_2000_700_2400_18_5_2-xxxxxxx.img.xz`
-    - DDR4-2600: `lx2160a_rev2_cex7_honeycomb_2000_700_2600_18_5_2-xxxxxxx.img.xz`
-    - DDR4-2900: `lx2160a_rev2_cex7_honeycomb_2000_700_2900_18_5_2-xxxxxxx.img.xz`
+    - DDR4-2400: `lx2160a_rev2_cex7_honeycomb_multi_2000_700_2400_8_5_2-xxxxxxx.img.xz`
+    - DDR4-2600: `lx2160a_rev2_cex7_honeycomb_multi_2000_700_2600_8_5_2-xxxxxxx.img.xz`
+    - DDR4-2900: `lx2160a_rev2_cex7_honeycomb_multi_2000_700_2900_8_5_2-xxxxxxx.img.xz`
 
   - LX2160A Clearfog-CX (board rev. 1.2+ with QSFP connector only):
 
-    - DDR4-2400: `lx2160a_rev2_cex7_clearfog-cx_xspi_2000_700_2400_18_5_2-xxxxxxx.img.xz`
-    - DDR4-2600: `lx2160a_rev2_cex7_clearfog-cx_xspi_2000_700_2600_18_5_2-xxxxxxx.img.xz`
-    - DDR4-2900: `lx2160a_rev2_cex7_clearfog-cx_xspi_2000_700_2900_18_5_2-xxxxxxx.img.xz`
+    - DDR4-2400: `lx2160a_rev2_cex7_clearfog-cx_multi_2000_700_2400_8_5_2-xxxxxxx.img.xz`
+    - DDR4-2600: `lx2160a_rev2_cex7_clearfog-cx_multi_2000_700_2600_8_5_2-xxxxxxx.img.xz`
+    - DDR4-2900: `lx2160a_rev2_cex7_clearfog-cx_multi_2000_700_2900_8_5_2-xxxxxxx.img.xz`
 
 - Install U-Boot to SPI Flash according to our [Reference BSP Documentation](https://github.com/SolidRun/lx2160a_build/tree/develop-ls-6.6.52-2.2.0?tab=readme-ov-file#spi-boot)
 
