@@ -146,7 +146,7 @@ Some sata ports fail to probe:
 
 Debian 13 is still on v6.12, which can't handle sata controllers that have their first port disabled.
 
-Further Linux v6.16 has introduced a new bug causing all sata ports disabled in device-tree, [fix was submitted to lkml](https://lore.kernel.org/r/20250911-cn913x-sr-fix-sata-v1-1-9e72238d0988@solid-run.com).
+Further Linux v6.16 has introduced a new bug causing all sata ports disabled in device-tree, [fix was submitted to lkml](https://lore.kernel.org/r/20250911-cn913x-sr-fix-sata-v2-0-0d79319105f8@solid-run.com) and is awaiting review.
 
 ~~Upgrade to v6.14 or later, e.g. by installing `linux-image-arm64` from [Debian Backports](https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://backports.debian.org/Instructions/)~~.
 
@@ -154,9 +154,12 @@ Further Linux v6.16 has introduced a new bug causing all sata ports disabled in 
 
 ### Boot-loop with NVME (PCI) connected
 
-CN9132 Clearfog boot-loops the Debian installer, when an nvme is connected.
+CN9132 Clearfog boot-loops the Debian installer, when an nvme or pci card is connected to either x2 or x4 slot.
+This is due to missing support for multi-lane pci ports on the mvebu-comphy driver, which is non-trivial to add.
 
-Currently known workaround is to avoid using nvme.
+Instead device-tree should remove ability to re-configure those lanes.
+
+A [patch was submitted to lkml](https://lore.kernel.org/r/20250911-cn913x-sr-fix-sata-v2-0-0d79319105f8@solid-run.com) and is awaiting review.
 
 ### Can't boot from NVME (PCI)
 
@@ -168,18 +171,7 @@ When OS is installed to a pci nvme drive, update according to [CN913x U-Boot Doc
 ### eMMC read / write errors
 
 On CN9132-CEX-7 only, eMMC access at high-speed modes is not stable - leading to sporadic failed transactions.
-These modes should be disabled from device-tree, a patch has *not yet* ben submitted on lkml:
-
-```
-&ap_sdhci0 {
-	/*
-	 * Not stable in HS modes - phy needs "more calibration", so disable
-	 * UHS (by preventing voltage switch), SDR104, SDR50 and DDR50 modes.
-	 */
-	no-1-8-v;
-	no-sd;
-};
-```
+These modes should be disabled from device-tree, a [patch was submitted to lkml](https://lore.kernel.org/r/20250911-cn913x-sr-fix-sata-v2-0-0d79319105f8@solid-run.com) and is awaiting review.
 
 ### eMMC U-Boot "unable to select a mode"
 
