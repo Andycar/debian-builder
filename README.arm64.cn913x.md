@@ -8,8 +8,8 @@ This page provides instructions for installing official [Debian from debian.org]
   - Clearfog Base (since Debian 13)
   - Clearfog Pro (since Debian 13)
   - CN9131 SolidWAN (since Debian 13)
-~~- CN9132 COM-Express Type 7~~
-  ~~- Clearfog (since Debian 13)~~
+- CN9132 COM-Express Type 7
+  - Clearfog (since Debian 13)
 
 ## Creating Installer Media
 
@@ -152,12 +152,34 @@ Further Linux v6.16 has introduced a new bug causing all sata ports disabled in 
 
 ~~**Resolved with Linux v6.14 or later.**~~
 
+### Boot-loop with NVME (PCI) connected
+
+CN9132 Clearfog boot-loops the Debian installer, when an nvme is connected.
+
+Currently known workaround is to avoid using nvme.
+
 ### Can't boot from NVME (PCI)
 
 Bootloaders built before 11/09/2025 do not automatically boot from NVME.
 When OS is installed to a pci nvme drive, update according to [CN913x U-Boot Documentation](https://github.com/SolidRun/Documentation/blob/bsp/cn913x/u-boot.md).
 
 **Resolved with u-boot builds dated 11/09/2025 or later.**
+
+### eMMC read / write errors
+
+On CN9132-CEX-7 only, eMMC access at high-speed modes is not stable - leading to sporadic failed transactions.
+These modes should be disabled from device-tree, a patch has *not yet* ben submitted on lkml:
+
+```
+&ap_sdhci0 {
+	/*
+	 * Not stable in HS modes - phy needs "more calibration", so disable
+	 * UHS (by preventing voltage switch), SDR104, SDR50 and DDR50 modes.
+	 */
+	no-1-8-v;
+	no-sd;
+};
+```
 
 ### eMMC U-Boot "unable to select a mode"
 
