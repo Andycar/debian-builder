@@ -264,7 +264,7 @@ download linux-image-6.12.38+deb13-arm64_6.12.38-1_arm64.deb http://ftp.debian.o
 	#   - i2c_mux, i2c_mux_pca954x (for sfp i2c bus)
 	# - cn913x:
 	#   - phy_mvebu_cp110_utmi (for usb phy)
-	#   - pwm_fan (for cn9132 fan control)
+	#   - pwm_fan (for cn9132 fan control): skipped to avoid fan stopping bug during installation
 	mkdir -p ${BASEDIR}/generate
 	build_initrd_kmod_patch_usr "${BASEDIR}/download/linux-image-arm64-13.0.0.deb" "${BASEDIR}/generate/linux-image-arm64-13.0.0-kmod.cpio.gz" \
 		usr/lib/modules/6.12.38+deb13-arm64/kernel/drivers/net/ethernet/freescale/xgmac_mdio.ko.xz \
@@ -273,7 +273,6 @@ download linux-image-6.12.38+deb13-arm64_6.12.38-1_arm64.deb http://ftp.debian.o
 		usr/lib/modules/6.12.38+deb13-arm64/kernel/drivers/i2c/i2c-mux.ko.xz \
 		usr/lib/modules/6.12.38+deb13-arm64/kernel/drivers/i2c/muxes/i2c-mux-pca954x.ko.xz \
 		usr/lib/modules/6.12.38+deb13-arm64/kernel/drivers/phy/marvell/phy-mvebu-cp110-utmi.ko.xz \
-		usr/lib/modules/6.12.38+deb13-arm64/kernel/drivers/hwmon/pwm-fan.ko.xz \
 		|| s=$?
 
 	build_hdmedia debian-13.0.0-arm64-netinst.img d-i-13.0.0-arm64 $((1024*1024*1024)) hd-media-13.0.0-armhf.tar.gz debian-13.0.0-arm64-netinst.iso "${BASEDIR}/generate/linux-image-arm64-13.0.0-kmod.cpio.gz" || s=$?
