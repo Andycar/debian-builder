@@ -171,6 +171,7 @@ function build_initrd_kmod_patch() {
 	mkdir -p lib/debian-installer-startup.d
 	printf "#!/bin/sh\n" > lib/debian-installer-startup.d/S09-sr-modules
 	for mod in $*; do
+		dirname $mod >> index
 		echo $mod >> index
 		echo "insmod /$mod" >> lib/debian-installer-startup.d/S09-sr-modules
 	done
@@ -201,6 +202,7 @@ function build_initrd_kmod_patch_usr() {
 	mkdir -p usr/lib/debian-installer-startup.d
 	printf "#!/bin/sh\n" > usr/lib/debian-installer-startup.d/S09-sr-modules
 	for mod in $*; do
+		dirname $mod >> index
 		echo $mod >> index
 		echo "insmod /$mod" >> usr/lib/debian-installer-startup.d/S09-sr-modules
 	done
