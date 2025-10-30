@@ -154,12 +154,24 @@ Further Linux v6.16 has introduced a new bug causing all sata ports disabled in 
 
 ### Boot-loop with NVME (PCI) connected
 
-CN9132 Clearfog boot-loops the Debian installer, when an nvme or pci card is connected to either x2 or x4 slot.
-This is due to missing support for multi-lane pci ports on the mvebu-comphy driver, which is non-trivial to add.
+CN9132 Clearfog boot-loops the Debian installer, when an nvme or pci card is connected to ~~either x2 or x4~~ any slot.
+This is due to ~~missing support for multi-lane pci ports on the mvebu-comphy driver~~ a race condition between common clock framework and clock/phy/pci drivers, which is non-trivial to resolve.
 
-Instead device-tree should remove ability to re-configure those lanes.
+~~Instead device-tree should remove ability to re-configure those lanes.~~
 
-A [patch was submitted to lkml](https://lore.kernel.org/r/20250911-cn913x-sr-fix-sata-v2-0-0d79319105f8@solid-run.com) and is awaiting review.
+~~A [patch was submitted to lkml](https://lore.kernel.org/r/20250911-cn913x-sr-fix-sata-v2-0-0d79319105f8@solid-run.com) and is awaiting review.~~
+
+The issue is currently being discussed on [the mailing lists](https://lists.infradead.org/pipermail/linux-phy/2025-October/026249.html).
+
+As a workaround kernel can be booted with `clk_ignore_unused` commandline option:
+
+```
+Hit any key to stop autoboot:  0
+Marvell>> edit bootargs
+edit: clk_ignore_unused
+Marvell>> saveenv
+Saving Environment to MMC... Writing to MMC(1)... OK
+```
 
 ### Can't boot from NVME (PCI)
 
