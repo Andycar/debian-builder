@@ -7,7 +7,7 @@ function error() {
 	exit $status
 }
 trap error ERR
-set -e
+set -eo pipefail
 
 BASEDIR=$(pwd)
 
@@ -18,8 +18,10 @@ PATH="$PATH:/usr/local/sbin:/usr/sbin:/sbin"
 # Download file form URL if does not exist locally.
 # Optionally with renaming.
 #
-# Note: This function uses round brackets in order to spawn a sub-shell with different error-behaviour
-function download() (
+# Note: Use a regular function (braces) instead of a subshell so that
+# exit statuses and traps propagate to the main shell. This ensures
+# `set -e` (errexit) correctly stops the script on download failures
+function download() {
 	local filename="$1"
 	local url="$2"
 	local rename="$3"
@@ -35,15 +37,14 @@ function download() (
 
 	# download
 	mkdir -p "${BASEDIR}/download"
-	wget -O "${BASEDIR}/download/${rename}" "${url}/${filename}"
-	if [ $? -ne 0 ]; then
-		echo "Download Failed ..."
+	if ! wget -O "${BASEDIR}/download/${rename}" "${url}/${filename}"; then
+		echo "Download Failed ..." >&2
 		rm -f "${BASEDIR}/download/${rename}"
 		return 1
 	fi
 
 	return 0
-)
+}
 
 #
 # Build installer image from hd-media tarball and iso
@@ -228,16 +229,15 @@ function build_initrd_kmod_patch_usr() {
 #   - TODO: HummingBoard CBi
 #   - TODO: SolidSense N6
 function build_debian_12_armhf() {
-	set -e
-	download linux-image-6.1.0-35-armmp_6.1.137-1_armhf.deb http://ftp.debian.org/debian/pool/main/l/linux linux-image-armmp-12.11.0.deb
-	download hd-media.tar.gz http://ftp.debian.org/debian/dists/bookworm/main/installer-armhf/20230607+deb12u11/images/hd-media hd-media-12.11.0-armhf.tar.gz
-	download debian-12.11.0-armhf-netinst.iso https://cdimage.debian.org/cdimage/archive/12.11.0/armhf/iso-cd
+	download linux-image-6.1.0-35-armmp_6.1.137-1_armhf.deb http://ftp.debian.org/debian/pool/main/l/linux linux-image-armmp-12.11.0.deb || return $?
+	download hd-media.tar.gz http://ftp.debian.org/debian/dists/bookworm/main/installer-armhf/20230607+deb12u11/images/hd-media hd-media-12.11.0-armhf.tar.gz || return $?
+	download debian-12.11.0-armhf-netinst.iso https://cdimage.debian.org/cdimage/archive/12.11.0/armhf/iso-cd debian-12.11.0-armhf-netinst.iso || return $?
 
 	# generate initrd patch with watchdog driver
 	mkdir -p ${BASEDIR}/generate
-	build_initrd_kmod_patch "${BASEDIR}/download/linux-image-armmp-12.11.0.deb" "${BASEDIR}/generate/linux-image-armmp-12.11.0-kmod.cpio.gz" lib/modules/6.1.0-35-armmp/kernel/drivers/watchdog/imx2_wdt.ko
+	build_initrd_kmod_patch "${BASEDIR}/download/linux-image-armmp-12.11.0.deb" "${BASEDIR}/generate/linux-image-armmp-12.11.0-kmod.cpio.gz" lib/modules/6.1.0-35-armmp/kernel/drivers/watchdog/imx2_wdt.ko || return $?
 
-	build_hdmedia debian-12.11.0-armhf-netinst.img d-i-12.11.0-armhf $((1024*1024*1024)) hd-media-12.11.0-armhf.tar.gz debian-12.11.0-armhf-netinst.iso "${BASEDIR}/generate/linux-image-armmp-12.11.0-kmod.cpio.gz"
+	build_hdmedia debian-12.11.0-armhf-netinst.img d-i-12.11.0-armhf $((1024*1024*1024)) hd-media-12.11.0-armhf.tar.gz debian-12.11.0-armhf-netinst.iso "${BASEDIR}/generate/linux-image-armmp-12.11.0-kmod.cpio.gz" || return $?
 }
 
 # Debian trixie for arm64, net-install, for USB flash-drive (no bootloader)
@@ -251,10 +251,8 @@ function build_debian_12_armhf() {
 # - LX2162 Clearfog
 function build_debian_13_arm64() {
 download linux-image-6.12.38+deb13-arm64_6.12.38-1_arm64.deb http://ftp.debian.org/debian/pool/main/l/linux-signed-arm64 linux-image-arm64-13.0.0.deb
-	local s=0
-
-	download hd-media.tar.gz https://deb.debian.org/debian/dists/trixie/main/installer-arm64/20250803/images/hd-media hd-media-13.0.0-armhf.tar.gz || s=$?
-	download debian-13.0.0-arm64-netinst.iso https://cdimage.debian.org/cdimage/archive/13.0.0/arm64/iso-cd || s=$?
+	download hd-media.tar.gz https://deb.debian.org/debian/dists/trixie/main/installer-arm64/20250803/images/hd-media hd-media-13.0.0-armhf.tar.gz || return $?
+	download debian-13.0.0-arm64-netinst.iso https://cdimage.debian.org/cdimage/archive/13.0.0/arm64/iso-cd || return $?
 
 	# generate initrd patch with extra drivers:
 	# - lx216x:
@@ -273,11 +271,11 @@ download linux-image-6.12.38+deb13-arm64_6.12.38-1_arm64.deb http://ftp.debian.o
 		usr/lib/modules/6.12.38+deb13-arm64/kernel/drivers/i2c/i2c-mux.ko.xz \
 		usr/lib/modules/6.12.38+deb13-arm64/kernel/drivers/i2c/muxes/i2c-mux-pca954x.ko.xz \
 		usr/lib/modules/6.12.38+deb13-arm64/kernel/drivers/phy/marvell/phy-mvebu-cp110-utmi.ko.xz \
-		|| s=$?
+		|| return $?
 
-	build_hdmedia debian-13.0.0-arm64-netinst.img d-i-13.0.0-arm64 $((1024*1024*1024)) hd-media-13.0.0-armhf.tar.gz debian-13.0.0-arm64-netinst.iso "${BASEDIR}/generate/linux-image-arm64-13.0.0-kmod.cpio.gz" || s=$?
+	build_hdmedia debian-13.0.0-arm64-netinst.img d-i-13.0.0-arm64 $((1024*1024*1024)) hd-media-13.0.0-armhf.tar.gz debian-13.0.0-arm64-netinst.iso "${BASEDIR}/generate/linux-image-arm64-13.0.0-kmod.cpio.gz" || return $?
 
-	return $s
+	return 0
 }
 
 if [ $# -lt 1 ]; then
