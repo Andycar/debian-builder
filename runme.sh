@@ -229,15 +229,15 @@ function build_initrd_kmod_patch_usr() {
 #   - TODO: HummingBoard CBi
 #   - TODO: SolidSense N6
 function build_debian_12_armhf() {
-	download linux-image-6.1.0-35-armmp_6.1.137-1_armhf.deb http://ftp.debian.org/debian/pool/main/l/linux linux-image-armmp-12.11.0.deb || return $?
-	download hd-media.tar.gz http://ftp.debian.org/debian/dists/bookworm/main/installer-armhf/20230607+deb12u11/images/hd-media hd-media-12.11.0-armhf.tar.gz || return $?
-	download debian-12.11.0-armhf-netinst.iso https://cdimage.debian.org/cdimage/archive/12.11.0/armhf/iso-cd debian-12.11.0-armhf-netinst.iso || return $?
+	download linux-image-6.1.0-39-armmp_6.1.148-1_armhf.deb http://ftp.debian.org/debian/pool/main/l/linux linux-image-armmp-12.12.0.deb || return $?
+	download hd-media.tar.gz http://ftp.debian.org/debian/dists/bookworm/main/installer-armhf/20230607+deb12u12/images/hd-media hd-media-12.12.0-armhf.tar.gz || return $?
+	download debian-12.12.0-armhf-netinst.iso https://cdimage.debian.org/cdimage/archive/12.12.0/armhf/iso-cd debian-12.12.0-armhf-netinst.iso || return $?
 
 	# generate initrd patch with watchdog driver
 	mkdir -p ${BASEDIR}/generate
-	build_initrd_kmod_patch "${BASEDIR}/download/linux-image-armmp-12.11.0.deb" "${BASEDIR}/generate/linux-image-armmp-12.11.0-kmod.cpio.gz" lib/modules/6.1.0-35-armmp/kernel/drivers/watchdog/imx2_wdt.ko || return $?
+	build_initrd_kmod_patch "${BASEDIR}/download/linux-image-armmp-12.12.0.deb" "${BASEDIR}/generate/linux-image-armmp-12.12.0-kmod.cpio.gz" lib/modules/6.1.0-39-armmp/kernel/drivers/watchdog/imx2_wdt.ko || return $?
 
-	build_hdmedia debian-12.11.0-armhf-netinst.img d-i-12.11.0-armhf $((1024*1024*1024)) hd-media-12.11.0-armhf.tar.gz debian-12.11.0-armhf-netinst.iso "${BASEDIR}/generate/linux-image-armmp-12.11.0-kmod.cpio.gz" || return $?
+	build_hdmedia debian-12.12.0-armhf-netinst.img d-i-12.12.0-armhf $((1024*1024*1024)) hd-media-12.12.0-armhf.tar.gz debian-12.12.0-armhf-netinst.iso "${BASEDIR}/generate/linux-image-armmp-12.12.0-kmod.cpio.gz" || return $?
 }
 
 # Debian trixie for arm64, net-install, for USB flash-drive (no bootloader)
