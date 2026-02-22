@@ -250,9 +250,9 @@ function build_debian_12_armhf() {
 # - LX2160 Honeycomb
 # - LX2162 Clearfog
 function build_debian_13_arm64() {
-download linux-image-6.12.38+deb13-arm64_6.12.38-1_arm64.deb http://ftp.debian.org/debian/pool/main/l/linux-signed-arm64 linux-image-arm64-13.0.0.deb
-	download hd-media.tar.gz https://deb.debian.org/debian/dists/trixie/main/installer-arm64/20250803/images/hd-media hd-media-13.0.0-armhf.tar.gz || return $?
-	download debian-13.0.0-arm64-netinst.iso https://cdimage.debian.org/cdimage/archive/13.0.0/arm64/iso-cd || return $?
+download linux-image-6.12.63+deb13-arm64_6.12.63-1_arm64.deb http://ftp.debian.org/debian/pool/main/l/linux-signed-arm64 linux-image-arm64-13.2.0.deb
+	download hd-media.tar.gz https://deb.debian.org/debian/dists/trixie/main/installer-arm64/20250803+deb13u3/images/hd-media hd-media-13.2.0-armhf.tar.gz || return $?
+	download debian-13.2.0-arm64-netinst.iso https://cdimage.debian.org/cdimage/archive/13.2.0/arm64/iso-cd || return $?
 
 	# generate initrd patch with extra drivers:
 	# - lx216x:
@@ -264,16 +264,16 @@ download linux-image-6.12.38+deb13-arm64_6.12.38-1_arm64.deb http://ftp.debian.o
 	#   - phy_mvebu_cp110_utmi (for usb phy)
 	#   - pwm_fan (for cn9132 fan control): skipped to avoid fan stopping bug during installation
 	mkdir -p ${BASEDIR}/generate
-	build_initrd_kmod_patch_usr "${BASEDIR}/download/linux-image-arm64-13.0.0.deb" "${BASEDIR}/generate/linux-image-arm64-13.0.0-kmod.cpio.gz" \
-		usr/lib/modules/6.12.38+deb13-arm64/kernel/drivers/net/ethernet/freescale/xgmac_mdio.ko.xz \
-		usr/lib/modules/6.12.38+deb13-arm64/kernel/drivers/net/phy/qcom/at803x.ko.xz \
-		usr/lib/modules/6.12.38+deb13-arm64/kernel/drivers/phy/freescale/phy-fsl-lynx-28g.ko.xz \
-		usr/lib/modules/6.12.38+deb13-arm64/kernel/drivers/i2c/i2c-mux.ko.xz \
-		usr/lib/modules/6.12.38+deb13-arm64/kernel/drivers/i2c/muxes/i2c-mux-pca954x.ko.xz \
-		usr/lib/modules/6.12.38+deb13-arm64/kernel/drivers/phy/marvell/phy-mvebu-cp110-utmi.ko.xz \
+	build_initrd_kmod_patch_usr "${BASEDIR}/download/linux-image-arm64-13.2.0.deb" "${BASEDIR}/generate/linux-image-arm64-13.2.0-kmod.cpio.gz" \
+		usr/lib/modules/6.12.63+deb13-arm64/kernel/drivers/net/ethernet/freescale/xgmac_mdio.ko.xz \
+		usr/lib/modules/6.12.63+deb13-arm64/kernel/drivers/net/phy/qcom/at803x.ko.xz \
+		usr/lib/modules/6.12.63+deb13-arm64/kernel/drivers/phy/freescale/phy-fsl-lynx-28g.ko.xz \
+		usr/lib/modules/6.12.63+deb13-arm64/kernel/drivers/i2c/i2c-mux.ko.xz \
+		usr/lib/modules/6.12.63+deb13-arm64/kernel/drivers/i2c/muxes/i2c-mux-pca954x.ko.xz \
+		usr/lib/modules/6.12.63+deb13-arm64/kernel/drivers/phy/marvell/phy-mvebu-cp110-utmi.ko.xz \
 		|| return $?
 
-	build_hdmedia debian-13.0.0-arm64-netinst.img d-i-13.0.0-arm64 $((1024*1024*1024)) hd-media-13.0.0-armhf.tar.gz debian-13.0.0-arm64-netinst.iso "${BASEDIR}/generate/linux-image-arm64-13.0.0-kmod.cpio.gz" || return $?
+	build_hdmedia debian-13.2.0-arm64-netinst.img d-i-13.2.0-arm64 $((1024*1024*1024)) hd-media-13.2.0-armhf.tar.gz debian-13.2.0-arm64-netinst.iso "${BASEDIR}/generate/linux-image-arm64-13.2.0-kmod.cpio.gz" || return $?
 
 	return 0
 }
